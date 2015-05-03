@@ -48,7 +48,7 @@ def normalize_format_name(fmt):
 
 def save_cover_data_to(data, path, bgcolor='#ffffff', resize_to=None,
         return_data=False, compression_quality=90, minify_to=None,
-        grayscale=False):
+        grayscale=False, eink=False):
     '''
     Saves image in data to path, in the format specified by the path
     extension. Removes any transparency. If there is no transparency and no
@@ -62,9 +62,12 @@ def save_cover_data_to(data, path, bgcolor='#ffffff', resize_to=None,
     :param bgcolor: The color for transparent pixels. Must be specified in hex.
     :param resize_to: A tuple (width, height) or None for no resizing
     :param minify_to: A tuple (width, height) to specify maximum target size.
+        The image will be resized to fit into this target size.
+        If None the value from the tweak is used.
     :param grayscale: If True, the image is grayscaled
-    will be resized to fit into this target size. If None the value from the
-    tweak is used.
+    :param eink: If True, the image is scaled with the Lanczos filter,
+        remapped & dithered down to the eInk 16 shades of grey color palette,
+        and letterboxed with black borders if need be.
 
     '''
     changed = False
@@ -73,23 +76,46 @@ def save_cover_data_to(data, path, bgcolor='#ffffff', resize_to=None,
     fmt = os.path.splitext(path)[1]
     fmt = normalize_format_name(fmt[1:])
 
-    if grayscale:
+    if eink:
+        # Slightly sharper, at the cost of more ringing.
+        # Usually looks better on eInk though, especially once dithered.
+        resize_filter = 'LanczosFilter'
+    else:
+        # Matches the default filter, cf. __init__.py @ L185
+        resize_filter = 'CatromFilter'
+
+    if grayscale or eink:
         img.type = "GrayscaleType"
         changed = True
 
     if resize_to is not None:
-        img.size = (resize_to[0], resize_to[1])
+        img.size = (resize_to[0], resize_to[1], resize_filter)
         changed = True
     owidth, oheight = img.size
     nwidth, nheight = tweaks['maximum_cover_size'] if minify_to is None else minify_to
     scaled, nwidth, nheight = fit_image(owidth, oheight, nwidth, nheight)
     if scaled:
-        img.size = (nwidth, nheight)
+        img.size = (nwidth, nheight, resize_filter)
         changed = True
     if img.has_transparent_pixels():
         canvas = create_canvas(img.size[0], img.size[1], bgcolor)
         canvas.compose(img)
         img = canvas
+        changed = True
+
+    if eink:
+        # Handle the letterboxing ourselves if need be...
+        cwidth, cheight = minify_to
+        if cwidth > nwidth or cheight > nheight:
+            canvas = create_canvas(cwidth, cheight, '#000000')
+            left = int(max(0, (cwidth - nwidth)/2.))
+            top = int(max(0, (cheight - nheight)/2.))
+            canvas.compose(img, left, top)
+            img = canvas
+            changed = True
+        eink_map = Image()
+        eink_map.open(P('magick/eink_colors.gif'))
+        img.remap(eink_map)
         changed = True
 
     if not changed:

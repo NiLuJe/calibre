@@ -54,7 +54,7 @@ magick_PixelWand_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self = (magick_PixelWand *)type->tp_alloc(type, 0);
     if (self != NULL) {
         self->wand = NewPixelWand();
-        if (self->wand == NULL || self->wand < 0) { 
+        if (self->wand == NULL || self->wand < 0) {
             PyErr_SetString(PyExc_Exception, "Failed to allocate wand.");
             self->wand = NULL;
             Py_DECREF(self);
@@ -117,7 +117,7 @@ static PyMethodDef magick_PixelWand_methods[] = {
 };
 
 static PyGetSetDef  magick_PixelWand_getsetters[] = {
-    {(char *)"color", 
+    {(char *)"color",
      (getter)magick_PixelWand_color_getter, (setter)magick_PixelWand_color_setter,
      (char *)"PixelWand color. ImageMagick color specification.",
      NULL},
@@ -195,7 +195,7 @@ magick_DrawingWand_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self = (magick_DrawingWand *)type->tp_alloc(type, 0);
     if (self != NULL) {
         self->wand = NewDrawingWand();
-        if (self->wand == NULL || self->wand < 0) { 
+        if (self->wand == NULL || self->wand < 0) {
             PyErr_SetString(PyExc_Exception, "Failed to allocate wand.");
             self->wand = NULL;
             Py_DECREF(self);
@@ -303,7 +303,7 @@ magick_DrawingWand_stroke_color_setter(magick_DrawingWand *self, PyObject *val, 
         return -1;
     }
 
-    
+
     pw = (magick_PixelWand*)val;
     if (!IsPixelWand(pw->wand)) { PyErr_SetString(PyExc_TypeError, "Invalid PixelWand"); return -1; }
 
@@ -342,7 +342,7 @@ magick_DrawingWand_fill_color_setter(magick_DrawingWand *self, PyObject *val, vo
         return -1;
     }
 
-    
+
     pw = (magick_PixelWand*)val;
     if (!IsPixelWand(pw->wand)) { PyErr_SetString(PyExc_TypeError, "Invalid PixelWand"); return -1; }
 
@@ -416,32 +416,32 @@ static PyMethodDef magick_DrawingWand_methods[] = {
 };
 
 static PyGetSetDef  magick_DrawingWand_getsetters[] = {
-    {(char *)"font_", 
+    {(char *)"font_",
      (getter)magick_DrawingWand_font_getter, (setter)magick_DrawingWand_font_setter,
      (char *)"DrawingWand font path. Absolute path to font file.",
      NULL},
 
-    {(char *)"font_size_", 
+    {(char *)"font_size_",
      (getter)magick_DrawingWand_fontsize_getter, (setter)magick_DrawingWand_fontsize_setter,
      (char *)"DrawingWand fontsize",
      NULL},
 
-    {(char *)"stroke_color_", 
+    {(char *)"stroke_color_",
      (getter)magick_DrawingWand_stroke_color_getter, (setter)magick_DrawingWand_stroke_color_setter,
      (char *)"DrawingWand stroke color",
      NULL},
 
-    {(char *)"fill_color_", 
+    {(char *)"fill_color_",
      (getter)magick_DrawingWand_fill_color_getter, (setter)magick_DrawingWand_fill_color_setter,
      (char *)"DrawingWand fill color",
      NULL},
 
-    {(char *)"text_antialias", 
+    {(char *)"text_antialias",
      (getter)magick_DrawingWand_textantialias_getter, (setter)magick_DrawingWand_textantialias_setter,
      (char *)"DrawingWand text antialias",
      NULL},
 
-    {(char *)"gravity_", 
+    {(char *)"gravity_",
      (getter)magick_DrawingWand_gravity_getter, (setter)magick_DrawingWand_gravity_setter,
      (char *)"DrawingWand gravity",
      NULL},
@@ -509,6 +509,7 @@ static PyObject* magick_Image_compose(magick_Image *self, PyObject *args);
 static PyObject* magick_Image_compare(magick_Image *self, PyObject *args);
 static PyObject* magick_Image_copy(magick_Image *self, PyObject *args);
 static PyObject* magick_Image_texture(magick_Image *self, PyObject *args);
+static PyObject* magick_Image_remap(magick_Image *self, PyObject *args);
 // }}}
 
 static void
@@ -526,7 +527,7 @@ magick_Image_new(PyTypeObject *type, PyObject *args, PyObject *kwds)
     self = (magick_Image *)type->tp_alloc(type, 0);
     if (self != NULL) {
         self->wand = NewMagickWand();
-        if (self->wand == NULL || self->wand < 0) { 
+        if (self->wand == NULL || self->wand < 0) {
             PyErr_SetString(PyExc_Exception, "Failed to allocate wand.");
             self->wand = NULL;
             Py_DECREF(self);
@@ -545,7 +546,7 @@ magick_Image_constitute(magick_Image *self, PyObject *args) {
     PyObject *capsule = NULL;
     MagickBooleanType res = MagickFalse;
     void *data = NULL;
-    
+
     NULL_CHECK(NULL)
     if (!PyArg_ParseTuple(args, "IIsO", &width, &height, &map, &capsule)) return NULL;
 
@@ -573,7 +574,7 @@ magick_Image_load(magick_Image *self, PyObject *args) {
     const char *data;
 	Py_ssize_t dlen;
     MagickBooleanType res;
-    
+
     NULL_CHECK(NULL)
     if (!PyArg_ParseTuple(args, "s#", &data, &dlen)) return NULL;
 
@@ -593,7 +594,7 @@ magick_Image_identify(magick_Image *self, PyObject *args) {
     const char *data;
 	Py_ssize_t dlen;
     MagickBooleanType res;
-    
+
     NULL_CHECK(NULL)
     if (!PyArg_ParseTuple(args, "s#", &data, &dlen)) return NULL;
 
@@ -612,7 +613,7 @@ static PyObject *
 magick_Image_read(magick_Image *self, PyObject *args) {
     const char *data;
     MagickBooleanType res;
-    
+
    NULL_CHECK(NULL)
    if (!PyArg_ParseTuple(args, "s", &data)) return NULL;
 
@@ -659,7 +660,7 @@ magick_Image_font_metrics(magick_Image *self, PyObject *args) {
     Py_ssize_t i;
     DrawingWand *dw;
     double *metrics;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "O!s", &magick_DrawingWandType, &dw_, &text)) return NULL;
@@ -690,7 +691,7 @@ magick_Image_annotate(magick_Image *self, PyObject *args) {
     double x, y, angle;
 
     NULL_CHECK(NULL)
-    
+
     if (!PyArg_ParseTuple(args, "O!ddds", &magick_DrawingWandType, &dw_, &x, &y, &angle, &text)) return NULL;
     dw = ((magick_DrawingWand*)dw_)->wand;
     if (!IsDrawingWand(dw)) { PyErr_SetString(PyExc_TypeError, "Invalid drawing wand"); return NULL; }
@@ -709,7 +710,7 @@ magick_Image_export(magick_Image *self, PyObject *args) {
     unsigned char *data;
     PyObject *ans;
     size_t len = 0;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "s", &fmt)) return NULL;
@@ -721,7 +722,7 @@ magick_Image_export(magick_Image *self, PyObject *args) {
 
     data = MagickGetImageBlob(self->wand, &len);
 
-    if (data == NULL || len < 1) 
+    if (data == NULL || len < 1)
         return magick_set_exception(self->wand);
 
     ans = Py_BuildValue("s#", data, len);
@@ -791,7 +792,7 @@ magick_Image_size_setter(magick_Image *self, PyObject *val, void *closure) {
     }
 
     return 0;
-    
+
 }
 // }}}
 
@@ -838,7 +839,7 @@ magick_Image_distort(magick_Image *self, PyObject *args) {
     PyObject *bestfit, *argv, *t;
     MagickBooleanType res;
     double *arguments = NULL;
-   
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "iOO", &method, &argv, &bestfit)) return NULL;
@@ -848,7 +849,7 @@ magick_Image_distort(magick_Image *self, PyObject *args) {
     number = PySequence_Length(argv);
     if (number > 0) {
         arguments = (double *)PyMem_Malloc(sizeof(double) * number);
-        if (arguments == NULL) return PyErr_NoMemory(); 
+        if (arguments == NULL) return PyErr_NoMemory();
         for (i = 0; i < number; i++) {
             t = PySequence_ITEM(argv, i);
             if (t == NULL || !PyFloat_Check(t)) { PyErr_SetString(PyExc_TypeError, "Arguments must all be floats"); PyMem_Free(arguments); return NULL; }
@@ -870,7 +871,7 @@ magick_Image_distort(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_trim(magick_Image *self, PyObject *args) {
     double fuzz;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "d", &fuzz)) return NULL;
@@ -883,7 +884,7 @@ magick_Image_trim(magick_Image *self, PyObject *args) {
 
 // Image.remove_border {{{
 
-static size_t 
+static size_t
 magick_find_border(PixelIterator *pi, double fuzz, size_t img_width, double *reds, PixelWand** (*next)(PixelIterator*, size_t*)) {
     size_t band = 0, width = 0, c = 0;
     double *greens = NULL, *blues = NULL, red_average, green_average, blue_average, distance, first_row[3] = {0.0, 0.0, 0.0};
@@ -894,14 +895,14 @@ magick_find_border(PixelIterator *pi, double fuzz, size_t img_width, double *red
     while ( (pixels = next(pi, &width)) != NULL ) {
         red_average = 0; green_average = 0; blue_average = 0;
         for (c = 0; c < width; c++) {
-            reds[c] = PixelGetRed(pixels[c]); greens[c] = PixelGetGreen(pixels[c]); blues[c] = PixelGetBlue(pixels[c]); 
+            reds[c] = PixelGetRed(pixels[c]); greens[c] = PixelGetGreen(pixels[c]); blues[c] = PixelGetBlue(pixels[c]);
             /* PixelGetHSL(pixels[c], reds + c, greens + c, blues + c); */
             red_average += reds[c]; green_average += greens[c]; blue_average += blues[c];
         }
         red_average /= MAX(1, width); green_average /= MAX(1, width); blue_average /= MAX(1, width);
         distance = 0;
-        for (c = 0; c < width && distance < fuzz; c++) 
-            distance = MAX(distance, SQUARE((reds[c] - red_average)) + SQUARE((greens[c] - green_average)) + SQUARE((blues[c] - blue_average))); 
+        for (c = 0; c < width && distance < fuzz; c++)
+            distance = MAX(distance, SQUARE((reds[c] - red_average)) + SQUARE((greens[c] - green_average)) + SQUARE((blues[c] - blue_average)));
         if (distance > fuzz) break;  // row is not homogeneous
         if (band == 0) {first_row[0] = red_average; first_row[1] = blue_average; first_row[2] = green_average; }
         else {
@@ -919,7 +920,7 @@ magick_Image_remove_border(magick_Image *self, PyObject *args) {
     PixelIterator *pi = NULL;
     size_t width, height, iwidth, iheight;
     size_t top_band = 0, bottom_band = 0, left_band = 0, right_band = 0;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "d", &fuzz)) return NULL;
@@ -960,7 +961,7 @@ end:
 static PyObject *
 magick_Image_thumbnail(magick_Image *self, PyObject *args) {
     Py_ssize_t width, height;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "nn", &width, &height)) return NULL;
@@ -976,7 +977,7 @@ magick_Image_thumbnail(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_crop(magick_Image *self, PyObject *args) {
     Py_ssize_t width, height, x, y;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "nnnn", &width, &height, &x, &y)) return NULL;
@@ -993,7 +994,7 @@ static PyObject *
 magick_Image_set_border_color(magick_Image *self, PyObject *args) {
     PyObject *obj;
     magick_PixelWand *pw;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "O!", &magick_PixelWandType, &obj)) return NULL;
@@ -1013,7 +1014,7 @@ magick_Image_rotate(magick_Image *self, PyObject *args) {
     PyObject *obj;
     magick_PixelWand *pw;
     double degrees;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "O!d", &magick_PixelWandType, &obj, &degrees)) return NULL;
@@ -1032,7 +1033,7 @@ static PyObject *
 magick_Image_flip(magick_Image *self, PyObject *args) {
     PyObject *obj = NULL;
     MagickBooleanType ret = 0;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "|O", &obj)) return NULL;
@@ -1048,7 +1049,7 @@ magick_Image_flip(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_set_page(magick_Image *self, PyObject *args) {
     Py_ssize_t width, height, x, y;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "nnnn", &width, &height, &x, &y)) return NULL;
@@ -1064,7 +1065,7 @@ magick_Image_set_page(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_set_compression_quality(magick_Image *self, PyObject *args) {
     Py_ssize_t quality;
-    
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "n", &quality)) return NULL;
@@ -1125,7 +1126,7 @@ magick_Image_add_border(magick_Image *self, PyObject *args) {
     Py_ssize_t dx, dy;
     PyObject *obj;
     magick_PixelWand *pw;
-   
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "O!nn", &magick_PixelWandType, &obj, &dx, &dy)) return NULL;
@@ -1143,7 +1144,7 @@ magick_Image_add_border(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_sharpen(magick_Image *self, PyObject *args) {
     double radius, sigma;
-   
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "dd", &radius, &sigma)) return NULL;
@@ -1159,7 +1160,7 @@ magick_Image_sharpen(magick_Image *self, PyObject *args) {
 static PyObject *
 magick_Image_blur(magick_Image *self, PyObject *args) {
     double radius, sigma;
-   
+
     NULL_CHECK(NULL)
 
     if (!PyArg_ParseTuple(args, "dd", &radius, &sigma)) return NULL;
@@ -1180,7 +1181,6 @@ magick_Image_quantize(magick_Image *self, PyObject *args) {
 
     NULL_CHECK(NULL)
 
-   
     if (!PyArg_ParseTuple(args, "ninOO", &number_colors, &colorspace, &treedepth, &dither, &measure_error)) return NULL;
 
     if (!MagickQuantizeImage(self->wand, number_colors, colorspace, treedepth, PyObject_IsTrue(dither), PyObject_IsTrue(measure_error))) return magick_set_exception(self->wand);
@@ -1288,7 +1288,7 @@ magick_Image_set_opacity(magick_Image *self, PyObject *args) {
     double opacity;
     NULL_CHECK(NULL)
 
-   
+
     if (!PyArg_ParseTuple(args, "d", &opacity)) return NULL;
 
     if (!MagickSetImageOpacity(self->wand, opacity)) return magick_set_exception(self->wand);
@@ -1444,36 +1444,40 @@ static PyMethodDef magick_Image_methods[] = {
     },
 
     {"sharpen", (PyCFunction)magick_Image_sharpen, METH_VARARGS,
-     "sharpen(radius, sigma) \n\n sharpens an image. We convolve the image with a Gaussian operator of the given radius and standard deviation (sigma). For reasonable results, the radius should be larger than sigma. Use a radius of 0 and MagickSharpenImage() selects a suitable radius for you." 
+     "sharpen(radius, sigma) \n\n sharpens an image. We convolve the image with a Gaussian operator of the given radius and standard deviation (sigma). For reasonable results, the radius should be larger than sigma. Use a radius of 0 and MagickSharpenImage() selects a suitable radius for you."
     },
 
     {"blur", (PyCFunction)magick_Image_blur, METH_VARARGS,
-     "blur(radius, sigma) \n\n blurs an image. We convolve the image with a Gaussian operator of the given radius and standard deviation (sigma). For reasonable results, the radius should be larger than sigma. Use a radius of 0 and MagickBlurImage() selects a suitable radius for you." 
+     "blur(radius, sigma) \n\n blurs an image. We convolve the image with a Gaussian operator of the given radius and standard deviation (sigma). For reasonable results, the radius should be larger than sigma. Use a radius of 0 and MagickBlurImage() selects a suitable radius for you."
     },
 
     {"despeckle", (PyCFunction)magick_Image_despeckle, METH_VARARGS,
-     "despeckle() \n\n reduces the speckle noise in an image while preserving the edges of the original image." 
+     "despeckle() \n\n reduces the speckle noise in an image while preserving the edges of the original image."
     },
 
     {"quantize", (PyCFunction)magick_Image_quantize, METH_VARARGS,
-     "quantize(number_colors, colorspace, treedepth, dither, measure_error) \n\n analyzes the colors within a reference image and chooses a fixed number of colors to represent the image. The goal of the algorithm is to minimize the color difference between the input and output image while minimizing the processing time." 
+     "quantize(number_colors, colorspace, treedepth, dither, measure_error) \n\n analyzes the colors within a reference image and chooses a fixed number of colors to represent the image. The goal of the algorithm is to minimize the color difference between the input and output image while minimizing the processing time."
+    },
+
+    {"remap", (PyCFunction)magick_Image_remap, METH_VARARGS,
+     "remap(ref_map, method) \n\n replaces the colors of an image with the closest color from a reference image."
     },
 
     {NULL}  /* Sentinel */
 };
 
 static PyGetSetDef  magick_Image_getsetters[] = {
-    {(char *)"size_", 
+    {(char *)"size_",
      (getter)magick_Image_size_getter, (setter)magick_Image_size_setter,
      (char *)"Image size (width, height). When setting pass in (width, height, filter, blur). See MagickResizeImage docs.",
      NULL},
 
-    {(char *)"format_", 
+    {(char *)"format_",
      (getter)magick_Image_format_getter, (setter)magick_Image_format_setter,
      (char *)"Image format",
      NULL},
 
-    {(char *)"type_", 
+    {(char *)"type_",
      (getter)magick_Image_type_getter, (setter)magick_Image_type_setter,
      (char *)"the image type: UndefinedType, BilevelType, GrayscaleType, GrayscaleMatteType, PaletteType, PaletteMatteType, TrueColorType, TrueColorMatteType, ColorSeparationType, ColorSeparationMatteType, or OptimizeType.",
      NULL},
@@ -1567,7 +1571,7 @@ magick_Image_compose(magick_Image *self, PyObject *args)
 }
 // }}}
 
-// Image.compose {{{
+// Image.compare {{{
 static PyObject *
 magick_Image_compare(magick_Image *self, PyObject *args)
 {
@@ -1626,6 +1630,26 @@ magick_Image_texture(magick_Image *self, PyObject *args) {
 
 // }}}
 
+// Image.remap {{{
+
+static PyObject *
+magick_Image_remap(magick_Image *self, PyObject *args) {
+    PyObject *img;
+    magick_Image *remap;
+    int method;
+
+    NULL_CHECK(NULL)
+
+    if (!PyArg_ParseTuple(args, "O!i", &magick_ImageType, &img, &method)) return NULL;
+    remap = (magick_Image*)img;
+    if (!IsMagickWand(remap->wand)) {PyErr_SetString(PyExc_TypeError, "Not a valid ImageMagick wand"); return NULL;}
+
+    if (!MagickRemapImage(self->wand, remap->wand, method)) return magick_set_exception(self->wand);
+
+    Py_RETURN_NONE;
+}
+// }}}
+
 // Module functions {{{
 
 static PyObject *
@@ -1665,7 +1689,7 @@ static PyMethodDef magick_methods[] = {
 
 // Module initialization {{{
 PyMODINIT_FUNC
-initmagick(void) 
+initmagick(void)
 {
     PyObject* m;
 

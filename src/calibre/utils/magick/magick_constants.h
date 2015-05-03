@@ -46,6 +46,8 @@ static void magick_add_module_constants(PyObject *m) {
     PyModule_AddIntConstant(m, "TransparentAlphaChannel", 10);
     PyModule_AddIntConstant(m, "FlattenAlphaChannel", 11);
     PyModule_AddIntConstant(m, "RemoveAlphaChannel", 12);
+    PyModule_AddIntConstant(m, "AssociateAlphaChannel", 13);
+    PyModule_AddIntConstant(m, "DisassociateAlphaChannel", 14);
     PyModule_AddIntConstant(m, "UndefinedType", 0);
     PyModule_AddIntConstant(m, "BilevelType", 1);
     PyModule_AddIntConstant(m, "GrayscaleType", 2);
@@ -236,6 +238,7 @@ static void magick_add_module_constants(PyObject *m) {
     PyModule_AddIntConstant(m, "MinusSrcCompositeOp", 65);
     PyModule_AddIntConstant(m, "DarkenIntensityCompositeOp", 66);
     PyModule_AddIntConstant(m, "LightenIntensityCompositeOp", 67);
+    PyModule_AddIntConstant(m, "HardMixCompositeOp", 68);
     PyModule_AddIntConstant(m, "NoValue", 0);
     PyModule_AddIntConstant(m, "XValue", 1);
     PyModule_AddIntConstant(m, "XiValue", 1);
@@ -308,6 +311,7 @@ static void magick_add_module_constants(PyObject *m) {
     PyModule_AddIntConstant(m, "HSVColorspace", 31);
     PyModule_AddIntConstant(m, "HCLpColorspace", 32);
     PyModule_AddIntConstant(m, "YDbDrColorspace", 33);
+    PyModule_AddIntConstant(m, "xyYColorspace", 34);
     PyModule_AddIntConstant(m, "UndefinedMetric", 0);
     PyModule_AddIntConstant(m, "AbsoluteErrorMetric", 1);
     PyModule_AddIntConstant(m, "MeanAbsoluteErrorMetric", 2);
@@ -319,6 +323,7 @@ static void magick_add_module_constants(PyObject *m) {
     PyModule_AddIntConstant(m, "NormalizedCrossCorrelationErrorMetric", 8);
     PyModule_AddIntConstant(m, "FuzzErrorMetric", 9);
     PyModule_AddIntConstant(m, "UndefinedErrorMetric", 0);
+    PyModule_AddIntConstant(m, "PerceptualHashErrorMetric", 255);
     PyModule_AddIntConstant(m, "UndefinedCompression", 0);
     PyModule_AddIntConstant(m, "NoCompression", 1);
     PyModule_AddIntConstant(m, "BZipCompression", 2);
@@ -341,4 +346,8 @@ static void magick_add_module_constants(PyObject *m) {
     PyModule_AddIntConstant(m, "LZMACompression", 19);
     PyModule_AddIntConstant(m, "JBIG1Compression", 20);
     PyModule_AddIntConstant(m, "JBIG2Compression", 21);
+    PyModule_AddIntConstant(m, "UndefinedDitherMethod", 0);
+    PyModule_AddIntConstant(m, "NoDitherMethod", 1);
+    PyModule_AddIntConstant(m, "RiemersmaDitherMethod", 2);
+    PyModule_AddIntConstant(m, "FloydSteinbergDitherMethod", 3);
 }

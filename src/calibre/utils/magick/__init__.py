@@ -237,6 +237,10 @@ class Image(_magick.Image):  # {{{
         _magick.Image.quantize(self, number_colors, colorspace, treedepth, dither,
                 measure_error)
 
+    def remap(self, ref_map, method='FloydSteinbergDitherMethod'):
+        method = getattr(_magick, method)
+        _magick.Image.remap(self, ref_map, method)
+
     def trim(self, fuzz):
         try:
             _magick.Image.remove_border(self, fuzz)

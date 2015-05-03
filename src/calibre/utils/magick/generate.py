@@ -42,17 +42,17 @@ def get_value(const):
     return 0;
     }
     '''%const
-    with open('/tmp/ig.c','wb') as f:
+    with open('./ig.c','wb') as f:
         f.write(t)
-    subprocess.check_call(['gcc', '-I'+INC, '/tmp/ig.c', '-o', '/tmp/ig', '-lMagickWand-6.Q16'])
-    return int(subprocess.Popen(["/tmp/ig"],
+    subprocess.check_call(['gcc', '-I'+INC, './ig.c', '-o', './ig', '-lMagickWand-6.Q16HDRI'])
+    return int(subprocess.Popen(["./ig"],
         stdout=subprocess.PIPE).communicate()[0].strip())
 
 
 def main():
     constants = []
     for x in ('resample', 'image', 'draw', 'distort', 'composite', 'geometry',
-            'colorspace', 'compare', 'compress'):
+            'colorspace', 'compare', 'compress', 'quantize'):
         constants += list(parse_enums('magick/%s.h'%x))
     base = os.path.dirname(__file__)
     constants = [

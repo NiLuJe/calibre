@@ -1013,8 +1013,10 @@ class KOBO(USBMS):
                             # Return the data resized and in Grayscale if
                             # required
                             data = save_cover_data_to(data, 'dummy.jpg',
-                                    grayscale=uploadgrayscale,
-                                    resize_to=resize, return_data=True)
+                                    eink=uploadgrayscale,
+                                    resize_to=resize,
+                                    minify_to=resize,
+                                    return_data=True)
 
                             with open(fpath, 'wb') as f:
                                 f.write(data)
@@ -1251,9 +1253,9 @@ class KOBO(USBMS):
 
 class KOBOTOUCH(KOBO):
     name        = 'KoboTouch'
-    gui_name    = 'Kobo Touch/Glo/Mini/Aura HD'
+    gui_name    = 'Kobo Touch/Glo/Mini/Aura HD/Aura/Aura H2O/Glo HD'
     author      = 'David Forrester'
-    description = 'Communicate with the Kobo Touch, Glo, Mini and Aura HD ereaders. Based on the existing Kobo driver by %s.' % (KOBO.author)
+    description = 'Communicate with the Kobo Touch, Glo, Mini, Aura HD, Aura, Aura H2O & Glo HD ereaders. Based on the existing Kobo driver by %s.' % (KOBO.author)
 #    icon        = I('devices/kobotouch.jpg')
 
     supported_dbversion             = 120
@@ -1293,10 +1295,18 @@ class KOBOTOUCH(KOBO):
             ':::'+_('Delete any empty bookshelves from the Kobo when syncing is finished. This is only for firmware V2.0.0 or later.'),
             _('Upload covers for books') +
             ':::'+_('Upload cover images from the calibre library when sending books to the device.'),
-            _('Upload Black and White Covers'),
+            _('Upload Black and White Covers') +
+            ':::'+_('Dither cover images to the appropriate color palette for an eInk screen. '
+                    'This ensures greater accuracy and avoids banding, making sleep covers look better.'),
             _('Keep cover aspect ratio') +
             ':::'+_('When uploading covers, do not change the aspect ratio when resizing for the device.'
                     ' This is for firmware versions 2.3.1 and later.'),
+            _('Letterbox full-screen covers') +
+            ':::'+_('Do it on our end, instead of letting nickel handle it. '
+                    'Might provide better results on devices where nickel does not do extra processing, '
+                    'i.e., not the H2O. '
+                    'Obviously only has any effect if "Keep cover aspect ratio" is enabled. '
+                    'This is also probably undesirable if you disable the "Show book covers full screen" setting on your device.'),
             _('Show archived books') +
             ':::'+_('Archived books are listed on the device but need to be downloaded to read.'
                     ' Use this option to show these books and match them with books in the calibre library.'),
@@ -1345,6 +1355,7 @@ class KOBOTOUCH(KOBO):
             False,
             False,
             False,
+            False,
             u''
             ]
 
@@ -1354,13 +1365,14 @@ class KOBOTOUCH(KOBO):
     OPT_UPLOAD_COVERS               = 3
     OPT_UPLOAD_GRAYSCALE_COVERS     = 4
     OPT_KEEP_COVER_ASPECT_RATIO     = 5
-    OPT_SHOW_ARCHIVED_BOOK_RECORDS  = 6
-    OPT_SHOW_PREVIEWS               = 7
-    OPT_SHOW_RECOMMENDATIONS        = 8
-    OPT_UPDATE_SERIES_DETAILS       = 9
-    OPT_MODIFY_CSS                  = 10
-    OPT_SUPPORT_NEWER_FIRMWARE      = 11
-    OPT_DEBUGGING_TITLE             = 12
+    OPT_LETTERBOX_FULLSCREEN_COVERS = 6
+    OPT_SHOW_ARCHIVED_BOOK_RECORDS  = 7
+    OPT_SHOW_PREVIEWS               = 8
+    OPT_SHOW_RECOMMENDATIONS        = 9
+    OPT_UPDATE_SERIES_DETAILS       = 10
+    OPT_MODIFY_CSS                  = 11
+    OPT_SUPPORT_NEWER_FIRMWARE      = 12
+    OPT_DEBUGGING_TITLE             = 13
 
     opts = None
 
@@ -2353,9 +2365,14 @@ class KOBOTOUCH(KOBO):
         else:
             uploadgrayscale = True
 
+        if not opts.extra_customization[self.OPT_LETTERBOX_FULLSCREEN_COVERS]:
+            letterbox_fs_covers = False
+        else:
+            letterbox_fs_covers = True
+
 #        debug_print('KoboTouch: uploading cover')
         try:
-            self._upload_cover(path, filename, metadata, filepath, uploadgrayscale, self.keep_cover_aspect())
+            self._upload_cover(path, filename, metadata, filepath, uploadgrayscale, self.keep_cover_aspect(), letterbox_fs_covers)
         except Exception as e:
             debug_print('KoboTouch: FAILED to upload cover=%s Exception=%s'%(filepath, str(e)))
 
@@ -2384,7 +2401,7 @@ class KOBOTOUCH(KOBO):
             path = os.path.join(path, imageId)
         return path
 
-    def _upload_cover(self, path, filename, metadata, filepath, uploadgrayscale, keep_cover_aspect=False):
+    def _upload_cover(self, path, filename, metadata, filepath, uploadgrayscale, keep_cover_aspect=False, letterbox_fs_covers=False):
         from calibre.utils.magick.draw import save_cover_data_to, identify_data
         debug_print("KoboTouch:_upload_cover - filename='%s' uploadgrayscale='%s' "%(filename, uploadgrayscale))
 
@@ -2430,7 +2447,7 @@ class KOBOTOUCH(KOBO):
 
                         image_dir = os.path.dirname(os.path.abspath(path))
                         if not os.path.exists(image_dir):
-                            debug_print("KoboTouch:_upload_cover - Image directory does not exust. Creating path='%s'" % (image_dir))
+                            debug_print("KoboTouch:_upload_cover - Image directory does not exist. Creating path='%s'" % (image_dir))
                             os.makedirs(image_dir)
 
                         for ending, cover_options in self.cover_file_endings().items():
@@ -2446,22 +2463,28 @@ class KOBOTOUCH(KOBO):
                                 with open(cover, 'rb') as f:
                                     data = f.read()
 
+                                # Remember the canvas size
+                                canvas_size = resize
+
                                 if keep_cover_aspect:
-                                    if isFullsize:
-                                        resize = None
-                                    else:
-                                        width, height, fmt = identify_data(data)
-                                        cover_aspect = width / height
-                                        if cover_aspect > 1:
-                                            resize = (resize[0], int(resize[0] / cover_aspect))
-                                        elif cover_aspect < 1:
-                                            resize = (int(cover_aspect * resize[1]), resize[1])
+                                    # Always honor this, even if that means upscaling...
+                                    width, height, fmt = identify_data(data)
+                                    cover_aspect = width / height
+                                    if cover_aspect > 1:
+                                        resize = (resize[0], int(resize[0] / cover_aspect))
+                                    elif cover_aspect < 1:
+                                        resize = (int(cover_aspect * resize[1]), resize[1])
+                                    # Never letterbox thumbnails, that's ugly. As for fullscreen covers, honor the setting.
+                                    if not isFullsize or not letterbox_fs_covers:
+                                        canvas_size = resize
 
                                 # Return the data resized and in Grayscale if
                                 # required
                                 data = save_cover_data_to(data, 'dummy.jpg',
-                                        grayscale=uploadgrayscale,
-                                        resize_to=resize, return_data=True)
+                                        eink=uploadgrayscale,
+                                        resize_to=resize,
+                                        minify_to=canvas_size,
+                                        return_data=True)
 
                                 with open(fpath, 'wb') as f:
                                     f.write(data)
